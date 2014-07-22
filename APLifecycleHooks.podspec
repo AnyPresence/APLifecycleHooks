@@ -5,10 +5,10 @@ Pod::Spec.new do |s|
   s.description      = <<-DESC
 Allows you to write custom code for events in the iOS SDK. For example, you can now write a logout function that fires whenever you recieve a 401.
                        DESC
-  s.homepage         = "https://github.com/DavidBenko/APLifecycleHooks"
+  s.homepage         = "https://github.com/AnyPresence/APLifecycleHooks"
   s.license          = 'MIT'
   s.author           = { "David Benko" => "dbenko@anypresence.com" }
-  s.source           = { :git => "https://github.com/DavidBenko/APLifecycleHooks.git", :tag => s.version.to_s }
+  s.source           = { :git => "https://github.com/AnyPresence/APLifecycleHooks.git", :tag => s.version.to_s }
   s.social_media_url = 'https://twitter.com/davidwbenko'
 
   s.platform     = :ios
