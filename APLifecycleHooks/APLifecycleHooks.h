@@ -7,8 +7,10 @@
 //
 
 #import <Foundation/Foundation.h>
-#import "Swizzlean.h"
 
 @interface APLifecycleHooks : NSObject
-+(void)connectionFinished:(void (^)(NSMutableData *downloadedData, NSError *error))hook;
++(void)setSDKLogging:(BOOL)shouldLog;
++(void)synchronousConnectionFinished:(void (^)(NSData *downloadedData, NSError *error))hook;
++(void)asyncConnectionStarted:(void (^)(NSURLRequest * req, NSURLConnection *conn))hook;
++(void)asyncConnectionFinished:(BOOL (^)(NSMutableData *downloadedData, NSError *error))hook;
 @end
