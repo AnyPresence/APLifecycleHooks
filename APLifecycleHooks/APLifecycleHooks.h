@@ -8,9 +8,12 @@
 
 #import <Foundation/Foundation.h>
 
+#define __VERBOSE
+
 @interface APLifecycleHooks : NSObject
-+(void)setSDKLogging:(BOOL)shouldLog;
-+(void)synchronousConnectionFinished:(void (^)(NSData *downloadedData, NSError *error))hook;
-+(void)asyncConnectionStarted:(void (^)(NSURLRequest * req, NSURLConnection *conn))hook;
-+(void)asyncConnectionFinished:(BOOL (^)(NSMutableData *downloadedData, NSError *error))hook;
+
++ (void)connectionWillStart:(NSURLRequest * (^)(NSURLRequest * req))connectionWillStartCallback didStart:(void (^)(NSURLRequest * req, NSURLConnection *conn))connectionDidStartCallback;
++ (void)connectionReceievedResponse:(void (^)(NSURLConnection *connection, NSURLResponse *response))connectionReceievedResponseCallback;
++ (void)checkConnectionResponse:(BOOL (^)(NSURLResponse *response, NSError **error))checkConnectionResponseCallback;
++ (void)connectionFinished:(BOOL (^)(NSURLResponse *response, NSMutableData *downloadedData, NSError *error))connectionDidFinishCallback;
 @end
