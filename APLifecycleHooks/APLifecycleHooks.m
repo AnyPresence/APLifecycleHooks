@@ -17,7 +17,6 @@
 
 @interface APRequest (APLifecycleHooks)
 @property (nonatomic, strong) NSString * verb;
-@property (nonatomic, strong) NSURL * URL;
 @property (nonatomic, strong) NSData * data;
 @property (nonatomic, strong) NSString * contentType;
 @property (nonatomic, strong) NSURLConnection * connection;
@@ -66,41 +65,41 @@ downloadedData;
     Swizzlean *swizzle = [[Swizzlean alloc] initWithClassToSwizzle:[APRequest class]];
     swizzle.resetWhenDeallocated = NO;
     [swizzle swizzleInstanceMethod:@selector(loadAsync:) withReplacementImplementation:^(APRequest *_self, APRequestCallback callback){
-        
+
         if (_self.connection) {
             @throw [NSException exceptionWithName:kAPRequestConcurrentRequestException
                                            reason:@"Concurrent asynchronous requests not supported"
                                          userInfo:nil];
         }
-        
+
         NSURLRequest * request = [_self request];
-        
-        
+
+
         // Hijack Request Here
         if (connectionWillStartCallback) {
             request = connectionWillStartCallback(request);
         }
-        
+
         [_self reset];
-        
+
         _self.connection = [[NSURLConnection alloc] initWithRequest:request
                                                           delegate:_self
                                                   startImmediately:NO];
-        
+
         _self.downloadedData = [NSMutableData new];
         _self.callback = callback;
-        
-        
+
+
 #ifdef __VERBOSE
-        NSLog(@"\n%@ %@\n%@", _self.verb, [_self.URL absoluteString], [[NSString alloc] initWithData:_self.data encoding:NSUTF8StringEncoding]);
+        NSLog(@"\n%@ %@\n%@\n%@", [request HTTPMethod], [[request URL] absoluteString], [request allHTTPHeaderFields], [[NSString alloc] initWithData:_self.data encoding:NSUTF8StringEncoding]);
 #endif
-        
+
         [_self.connection start];
-        
+
         if (connectionDidStartCallback) {
             connectionDidStartCallback(request,_self.connection);
         }
-        
+
     }];
 }
 
@@ -109,17 +108,17 @@ downloadedData;
     swizzle.resetWhenDeallocated = NO;
     [swizzle swizzleInstanceMethod:@selector(connection:didReceiveResponse:) withReplacementImplementation:^(APRequest *_self, NSURLConnection *connection, NSURLResponse *response){
         assert(connection = _self.connection);
-        
+
         [_self setResponse: response];
-        
+
 #ifdef __VERBOSE
         if ([response isKindOfClass:[NSHTTPURLResponse class]])
             NSLog(@"%ld", (long)((NSHTTPURLResponse *)response).statusCode);
 #endif
-        
+
         NSError * error = nil;
         [_self checkResponse:response error:&error];
-        
+
         if (error) {
             _self.error = error;
             [[NSNotificationCenter defaultCenter] postNotificationName:kAPRequestErrorNotification
@@ -130,7 +129,7 @@ downloadedData;
         if (connectionReceievedResponseCallback) {
             connectionReceievedResponseCallback(connection,response);
         }
-        
+
     }];
 }
 
@@ -138,16 +137,16 @@ downloadedData;
     Swizzlean *swizzle = [[Swizzlean alloc] initWithClassToSwizzle:[APRequest class]];
     swizzle.resetWhenDeallocated = NO;
     [swizzle swizzleInstanceMethod:@selector(checkResponse:error:) withReplacementImplementation:^(APRequest *_self, NSURLResponse *response, NSError **error){
-        
+
         BOOL useDefaultChecks = YES;
-        
+
         if (checkConnectionResponseCallback) {
             useDefaultChecks = checkConnectionResponseCallback(response, error);
         }
-        
+
         if (useDefaultChecks){
             NSHTTPURLResponse * httpResponse = (NSHTTPURLResponse *)response;
-            
+
             if ([httpResponse isKindOfClass:[NSHTTPURLResponse class]]) {
                 if (httpResponse.statusCode < 200 || httpResponse.statusCode >= 300) {
                     *error = [NSError errorWithDomain:kAPRequestErrorDomain
@@ -163,7 +162,7 @@ downloadedData;
                 }
             }
         }
-        
+
     }];
 }
 
@@ -172,20 +171,20 @@ downloadedData;
     swizzle.resetWhenDeallocated = NO;
     [swizzle swizzleInstanceMethod:@selector(connectionDidFinishLoading:) withReplacementImplementation:^(APRequest *_self, NSURLConnection *connection) {
         assert(connection == _self.connection);
-        
+
 #ifdef __VERBOSE
         NSLog(@"%@", [[NSString alloc] initWithData:_self.downloadedData encoding:NSUTF8StringEncoding]);
 #endif
-        
+
         BOOL shouldContinue = true;
         if (connectionDidFinishCallback){
             shouldContinue = connectionDidFinishCallback(_self.response, _self.downloadedData, _self.error);
         }
-        
+
         if (shouldContinue) {
             _self.callback(_self.downloadedData, _self.error);
         }
-        
+
         [_self reset];
     }];
 }
