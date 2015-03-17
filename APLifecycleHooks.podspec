@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
   s.name             = "APLifecycleHooks"
-  s.version          = "0.0.1"
+  s.version          = "0.0.2"
   s.summary          = "Add events to private methods of AnyPresence iOS SDK"
   s.description      = <<-DESC
 Allows you to write custom code for events in the iOS SDK. For example, you can now write a logout function that fires whenever you recieve a 401.
