@@ -38,7 +38,6 @@ contentType,
 data,
 error,
 callback,
-URL,
 verb,
 downloadedData;
 
